@@ -3,38 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mock CMS - Exam Scheduling & Result Management</title>
+<title>ExamHub — Exam Scheduling &amp; Result Management</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  
+
 <header class="topbar">
-  <!-- Left: Burger Menu -->
-  <div class="menu-container">
-    <button id="burgerBtn" class="burger-icon-btn hidden" aria-label="Open menu">
-      ☰
-    </button>
-    <div id="navDropdown" class="menu-popover hidden">
-      <div class="menu-header">Menu</div>
-      <button data-view="dashboard" class="menu-item active">📊 Dashboard</button>
-      <button data-view="courses" class="menu-item">📚 Courses</button>
-      <button data-view="examinations" class="menu-item">📝 Examinations</button>
-      <button data-view="results" class="menu-item">🎓 Results</button>
-      <hr class="menu-divider">
-      <button data-view="notifications" class="menu-item">🔔 Notifications</button>
-    </div>
-  </div>
-
-  <!-- Center: Brand Title -->
   <div class="brand">
-    <span class="brand-name">MockCMS</span>
+    <span class="brand-mark">Ex</span>
+    <span class="brand-name">ExamHub</span>
   </div>
-
-  <!-- Right: Role, User Name & Logout -->
+  <nav id="nav" class="nav hidden">
+    <button data-view="dashboard" class="nav-link active">Dashboard</button>
+    <button data-view="courses" class="nav-link">Courses</button>
+    <button data-view="examinations" class="nav-link">Examinations</button>
+    <button data-view="results" class="nav-link">Results</button>
+    <button data-view="notifications" class="nav-link">Notifications</button>
+  </nav>
   <div id="userbox" class="userbox hidden">
-    <span id="roleLabel" class="role-badge hidden"></span>
-    <span id="userLabel" class="user-label"></span>
-    <button id="logoutBtn" class="btn-logout">Log out</button>
+    <span id="userLabel"></span>
+    <button id="logoutBtn" class="btn-ghost">Log out</button>
   </div>
 </header>
 
@@ -43,7 +31,7 @@
   <!-- LOGIN VIEW -->
   <section id="view-login" class="view active">
     <div class="auth-card">
-      <h1>Sign in to Mock CMS</h1>
+      <h1>Sign in to ExamHub</h1>
       <p class="muted">Exam Scheduling &amp; Result Management System</p>
 
       <form id="loginForm">
@@ -63,7 +51,7 @@
         <ul>
           <li><button class="chip" data-email="admin@uptm.edu.my">Admin — Aisha Rahman</button></li>
           <li><button class="chip" data-email="kumar@uptm.edu.my">Lecturer — Dr. Kumar Selvam</button></li>
-          <li><button class="chip" data-email="ali@student.uptm.edu.my">Student — Ali Hajar</button></li>
+          <li><button class="chip" data-email="ali@student.uptm.edu.my">Student — Ali Hassan</button></li>
         </ul>
       </div>
 

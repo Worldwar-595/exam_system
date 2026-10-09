@@ -4,8 +4,7 @@
 // ============================================================
 
 const API_BASE = 'http://localhost:3000/api';
-const apiBaseLabel = document.getElementById('apiBaseLabel');
-if (apiBaseLabel) apiBaseLabel.textContent = API_BASE;
+document.getElementById('apiBaseLabel').textContent = API_BASE;
 
 let state = {
   token: localStorage.getItem('exam_token') || null,
@@ -37,7 +36,6 @@ async function api(path, { method = 'GET', body = null, auth = true } = {}) {
 // ---------- Toast ----------
 function toast(message, isError = false) {
   const el = document.getElementById('toast');
-  if (!el) return alert(message);
   el.textContent = message;
   el.classList.toggle('error', isError);
   el.classList.remove('hidden');
@@ -56,32 +54,26 @@ document.querySelectorAll('.chip').forEach((btn) => {
   });
 });
 
-if (loginForm) {
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (loginError) loginError.classList.add('hidden');
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  loginError.classList.add('hidden');
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
 
-    try {
-      const { data } = await api('/auth/login', { method: 'POST', body: { email, password }, auth: false });
-      state.token = data.token;
-      state.user = data.user;
-      localStorage.setItem('exam_token', state.token);
-      localStorage.setItem('exam_user', JSON.stringify(state.user));
-      onLoggedIn();
-    } catch (err) {
-      if (loginError) {
-        loginError.textContent = err.message;
-        loginError.classList.remove('hidden');
-      } else {
-        toast(err.message, true);
-      }
-    }
-  });
-}
+  try {
+    const { data } = await api('/auth/login', { method: 'POST', body: { email, password }, auth: false });
+    state.token = data.token;
+    state.user = data.user;
+    localStorage.setItem('exam_token', state.token);
+    localStorage.setItem('exam_user', JSON.stringify(state.user));
+    onLoggedIn();
+  } catch (err) {
+    loginError.textContent = err.message;
+    loginError.classList.remove('hidden');
+  }
+});
 
-document.getElementById('logoutBtn')?.addEventListener('click', () => {
+document.getElementById('logoutBtn').addEventListener('click', () => {
   state.token = null;
   state.user = null;
   localStorage.removeItem('exam_token');
@@ -90,17 +82,9 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => {
 });
 
 function onLoggedIn() {
-  document.getElementById('burgerBtn')?.classList.remove('hidden');
-  document.getElementById('userbox')?.classList.remove('hidden');
-  
-  const userLabel = document.getElementById('userLabel');
-  if (userLabel) userLabel.textContent = state.user.name;
-
-  const roleLabel = document.getElementById('roleLabel');
-  if (roleLabel) {
-    roleLabel.textContent = state.user.role;
-    roleLabel.classList.remove('hidden');
-  }
+  document.getElementById('nav').classList.remove('hidden');
+  document.getElementById('userbox').classList.remove('hidden');
+  document.getElementById('userLabel').textContent = `${state.user.name} (${state.user.role})`;
 
   const isAdmin = state.user.role === 'admin';
   const isStaff = isAdmin || state.user.role === 'lecturer';
@@ -110,19 +94,11 @@ function onLoggedIn() {
   switchView('dashboard');
 }
 
-// ---------- View switching & Navigation ----------
+// ---------- View switching ----------
 function switchView(name) {
   document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
-  const targetView = document.getElementById(`view-${name}`);
-  if (targetView) targetView.classList.add('active');
-
-  const navDropdown = document.getElementById('navDropdown');
-  if (navDropdown) {
-    navDropdown.querySelectorAll('.menu-item').forEach((btn) => {
-      btn.classList.toggle('active', btn.dataset.view === name);
-    });
-    navDropdown.classList.add('hidden');
-  }
+  document.getElementById(`view-${name}`).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach((b) => b.classList.toggle('active', b.dataset.view === name));
 
   if (name === 'dashboard') loadDashboard();
   if (name === 'courses') loadCourses();
@@ -131,34 +107,13 @@ function switchView(name) {
   if (name === 'notifications') loadNotifications();
 }
 
-// Burger menu popover handlers
-const burgerBtn = document.getElementById('burgerBtn');
-const navDropdown = document.getElementById('navDropdown');
-
-if (burgerBtn && navDropdown) {
-  burgerBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    navDropdown.classList.toggle('hidden');
-  });
-
-  document.addEventListener('click', (e) => {
-    if (!navDropdown.contains(e.target) && !burgerBtn.contains(e.target)) {
-      navDropdown.classList.add('hidden');
-    }
-  });
-
-  navDropdown.querySelectorAll('.menu-item').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const view = btn.dataset.view;
-      if (view) switchView(view);
-    });
-  });
-}
+document.getElementById('nav').addEventListener('click', (e) => {
+  if (e.target.matches('.nav-link')) switchView(e.target.dataset.view);
+});
 
 // ---------- Dashboard ----------
 async function loadDashboard() {
   const grid = document.getElementById('dashboardCards');
-  if (!grid) return;
   grid.innerHTML = '<p class="muted">Loading…</p>';
   try {
     const [courses, exams, results] = await Promise.all([
@@ -170,12 +125,12 @@ async function loadDashboard() {
       ${statCard(courses.pagination.total, 'Courses')}
       ${statCard(exams.pagination.total, state.user.role === 'student' ? 'Your upcoming exams' : 'Examinations scheduled')}
       ${statCard(results.pagination.total, state.user.role === 'student' ? 'Your published results' : 'Results published')}
+      ${statCard(state.user.role, 'Signed in as')}
     `;
   } catch (err) {
     grid.innerHTML = `<p class="error">${err.message}</p>`;
   }
 }
-
 function statCard(number, label) {
   return `<div class="stat-card"><div class="stat-number">${number}</div><div class="stat-label">${label}</div></div>`;
 }
@@ -183,10 +138,8 @@ function statCard(number, label) {
 // ---------- Courses ----------
 async function loadCourses(page = state.page.courses) {
   state.page.courses = page;
-  const searchInput = document.getElementById('courseSearch');
-  const search = searchInput ? searchInput.value : '';
+  const search = document.getElementById('courseSearch').value;
   const tbody = document.getElementById('coursesTableBody');
-  if (!tbody) return;
   tbody.innerHTML = `<tr><td colspan="5" class="muted">Loading…</td></tr>`;
   try {
     const q = new URLSearchParams({ page, limit: 5, sortBy: 'course_name', order: 'asc' });
@@ -207,10 +160,9 @@ async function loadCourses(page = state.page.courses) {
     tbody.innerHTML = `<tr><td colspan="5" class="error">${err.message}</td></tr>`;
   }
 }
+document.getElementById('courseSearch').addEventListener('input', debounce(() => loadCourses(1), 300));
 
-document.getElementById('courseSearch')?.addEventListener('input', debounce(() => loadCourses(1), 300));
-
-document.getElementById('courseAddBtn')?.addEventListener('click', () => {
+document.getElementById('courseAddBtn').addEventListener('click', () => {
   openModal('New course', `
     <label>Course code <input id="f_course_code" placeholder="SWC3633"></label>
     <label>Course name <input id="f_course_name" placeholder="Web API Development"></label>
@@ -220,7 +172,6 @@ document.getElementById('courseAddBtn')?.addEventListener('click', () => {
     <button class="btn-primary" onclick="submitCourse()">Create course</button>
   `);
 });
-
 async function submitCourse() {
   try {
     await api('/courses', { method: 'POST', body: {
@@ -230,7 +181,6 @@ async function submitCourse() {
     closeModal(); toast('Course created.'); loadCourses(1);
   } catch (err) { showFormError(err); }
 }
-
 async function deleteCourse(id) {
   if (!confirm('Delete this course?')) return;
   try { await api(`/courses/${id}`, { method: 'DELETE' }); toast('Course deleted.'); loadCourses(state.page.courses); }
@@ -240,10 +190,8 @@ async function deleteCourse(id) {
 // ---------- Examinations ----------
 async function loadExams(page = state.page.examinations) {
   state.page.examinations = page;
-  const searchInput = document.getElementById('examSearch');
-  const search = searchInput ? searchInput.value : '';
+  const search = document.getElementById('examSearch').value;
   const tbody = document.getElementById('examsTableBody');
-  if (!tbody) return;
   tbody.innerHTML = `<tr><td colspan="5" class="muted">Loading…</td></tr>`;
   try {
     const q = new URLSearchParams({ page, limit: 5, sortBy: 'exam_date', order: 'asc' });
@@ -265,10 +213,9 @@ async function loadExams(page = state.page.examinations) {
     tbody.innerHTML = `<tr><td colspan="5" class="error">${err.message}</td></tr>`;
   }
 }
+document.getElementById('examSearch').addEventListener('input', debounce(() => loadExams(1), 300));
 
-document.getElementById('examSearch')?.addEventListener('input', debounce(() => loadExams(1), 300));
-
-document.getElementById('examAddBtn')?.addEventListener('click', () => {
+document.getElementById('examAddBtn').addEventListener('click', () => {
   openModal('Schedule examination', `
     <label>Course ID <input id="f_course_id" type="number" placeholder="1"></label>
     <label>Date <input id="f_exam_date" type="date"></label>
@@ -279,7 +226,6 @@ document.getElementById('examAddBtn')?.addEventListener('click', () => {
     <button class="btn-primary" onclick="submitExam()">Schedule exam</button>
   `);
 });
-
 async function submitExam() {
   try {
     await api('/examinations', { method: 'POST', body: {
@@ -289,13 +235,11 @@ async function submitExam() {
     closeModal(); toast('Examination scheduled.'); loadExams(1);
   } catch (err) { showFormError(err); }
 }
-
 async function deleteExam(id) {
   if (!confirm('Delete this examination?')) return;
   try { await api(`/examinations/${id}`, { method: 'DELETE' }); toast('Examination deleted.'); loadExams(state.page.examinations); }
   catch (err) { toast(err.message, true); }
 }
-
 async function viewSlip(examId) {
   openModal('Exam slip', '<p class="muted">Generating QR slip…</p>');
   try {
@@ -316,7 +260,6 @@ async function viewSlip(examId) {
 async function loadResults(page = state.page.results) {
   state.page.results = page;
   const tbody = document.getElementById('resultsTableBody');
-  if (!tbody) return;
   tbody.innerHTML = `<tr><td colspan="5" class="muted">Loading…</td></tr>`;
   try {
     const q = new URLSearchParams({ page, limit: 5, sortBy: 'published_at', order: 'desc' });
@@ -335,7 +278,7 @@ async function loadResults(page = state.page.results) {
   }
 }
 
-document.getElementById('resultAddBtn')?.addEventListener('click', () => {
+document.getElementById('resultAddBtn').addEventListener('click', () => {
   openModal('Publish result', `
     <label>Student ID <input id="f_student_id" type="number" placeholder="4"></label>
     <label>Exam ID <input id="f_exam_id" type="number" placeholder="1"></label>
@@ -344,7 +287,6 @@ document.getElementById('resultAddBtn')?.addEventListener('click', () => {
     <button class="btn-primary" onclick="submitResult()">Publish result</button>
   `);
 });
-
 async function submitResult() {
   try {
     await api('/results', { method: 'POST', body: {
@@ -357,7 +299,6 @@ async function submitResult() {
 // ---------- Notifications ----------
 async function loadNotifications() {
   const list = document.getElementById('notificationsList');
-  if (!list) return;
   list.innerHTML = '<li class="muted">Loading…</li>';
   try {
     const { data } = await api('/notifications?limit=20');
@@ -372,7 +313,6 @@ async function loadNotifications() {
 // ---------- Pagination helper ----------
 function renderPager(elId, pagination, loader) {
   const el = document.getElementById(elId);
-  if (!el) return;
   const { page, totalPages } = pagination;
   el.innerHTML = `
     <button ${page <= 1 ? 'disabled' : ''} onclick="(${loader.name})(${page - 1})">Prev</button>
@@ -388,8 +328,8 @@ function openModal(title, bodyHtml) {
   document.getElementById('modalOverlay').classList.remove('hidden');
 }
 function closeModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
-document.getElementById('modalClose')?.addEventListener('click', closeModal);
-document.getElementById('modalOverlay')?.addEventListener('click', (e) => { if (e.target.id === 'modalOverlay') closeModal(); });
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalOverlay').addEventListener('click', (e) => { if (e.target.id === 'modalOverlay') closeModal(); });
 
 function val(id) { return document.getElementById(id).value; }
 function showFormError(err) {
