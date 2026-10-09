@@ -1,0 +1,296 @@
+{
+  "info": {
+    "name": "SWC3633 - Exam Scheduling & Result Management API",
+    "description": "Representative successful and error requests for every endpoint. Run 'Login as Admin' / 'Login as Student' first to auto-populate {{admin_token}} / {{student_token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000/api" },
+    { "key": "admin_token", "value": "" },
+    { "key": "student_token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register (success)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"New Student\",\n  \"email\": \"newstudent@student.uptm.edu.my\",\n  \"password\": \"Password123!\",\n  \"role\": \"student\"\n}" },
+            "url": "{{base_url}}/auth/register"
+          }
+        },
+        {
+          "name": "Register (error - validation)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"bad-email\",\n  \"password\": \"123\"\n}" },
+            "url": "{{base_url}}/auth/register"
+          }
+        },
+        {
+          "name": "Login as Admin (success)",
+          "event": [{ "listen": "test", "script": { "exec": ["const json = pm.response.json();", "if (json.success) pm.collectionVariables.set('admin_token', json.data.token);"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@uptm.edu.my\",\n  \"password\": \"Password123!\"\n}" },
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "Login as Student (success)",
+          "event": [{ "listen": "test", "script": { "exec": ["const json = pm.response.json();", "if (json.success) pm.collectionVariables.set('student_token', json.data.token);"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"ali@student.uptm.edu.my\",\n  \"password\": \"Password123!\"\n}" },
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "Login (error - wrong password)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@uptm.edu.my\",\n  \"password\": \"wrongpassword\"\n}" },
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "Get current user /me (success)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/auth/me"
+          }
+        },
+        {
+          "name": "Get current user /me (error - no token)",
+          "request": { "method": "GET", "url": "{{base_url}}/auth/me" }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List users - paginated/filtered (success)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/users?role=student&page=1&limit=5&sortBy=name&order=asc"
+          }
+        },
+        {
+          "name": "List users (error - forbidden, student token)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }],
+            "url": "{{base_url}}/users"
+          }
+        },
+        {
+          "name": "Update own profile (success)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{student_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Ali Hassan Bin Ahmad\"\n}" },
+            "url": "{{base_url}}/users/4"
+          }
+        },
+        {
+          "name": "Delete user (error - not found)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/users/9999"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "List courses - search (success)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }],
+            "url": "{{base_url}}/courses?search=Web&page=1&limit=5"
+          }
+        },
+        {
+          "name": "Create course (success)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"course_code\": \"SWC3703\",\n  \"course_name\": \"Advanced Web Security\",\n  \"faculty_id\": 1,\n  \"lecturer_id\": 2\n}" },
+            "url": "{{base_url}}/courses"
+          }
+        },
+        {
+          "name": "Create course (error - forbidden, student token)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{student_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"course_code\": \"SWC9999\",\n  \"course_name\": \"Hacked Course\",\n  \"faculty_id\": 1,\n  \"lecturer_id\": 2\n}" },
+            "url": "{{base_url}}/courses"
+          }
+        },
+        {
+          "name": "Create course (error - invalid faculty_id)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"course_code\": \"SWC0001\",\n  \"course_name\": \"Ghost Course\",\n  \"faculty_id\": 999,\n  \"lecturer_id\": 2\n}" },
+            "url": "{{base_url}}/courses"
+          }
+        },
+        {
+          "name": "Get course by id (success)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }],
+            "url": "{{base_url}}/courses/1"
+          }
+        },
+        {
+          "name": "Get course by id (error - not found)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }],
+            "url": "{{base_url}}/courses/9999"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Examinations",
+      "item": [
+        {
+          "name": "List examinations - sorted (success)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }],
+            "url": "{{base_url}}/examinations?sortBy=exam_date&order=asc"
+          }
+        },
+        {
+          "name": "Schedule exam (success)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"course_id\": 1,\n  \"exam_date\": \"2026-12-05\",\n  \"start_time\": \"09:00\",\n  \"end_time\": \"11:00\",\n  \"venue\": \"Hall D\"\n}" },
+            "url": "{{base_url}}/examinations"
+          }
+        },
+        {
+          "name": "Schedule exam (error - bad time format)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"course_id\": 1,\n  \"exam_date\": \"2026-12-05\",\n  \"start_time\": \"9am\",\n  \"end_time\": \"11am\",\n  \"venue\": \"Hall D\"\n}" },
+            "url": "{{base_url}}/examinations"
+          }
+        },
+        {
+          "name": "Get exam slip - QR code (success, third-party API)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }],
+            "url": "{{base_url}}/examinations/1/slip"
+          }
+        },
+        {
+          "name": "Get exam slip (error - not registered)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }],
+            "url": "{{base_url}}/examinations/3/slip"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Results",
+      "item": [
+        {
+          "name": "List results - student sees own only (success)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }],
+            "url": "{{base_url}}/results?sortBy=published_at&order=desc"
+          }
+        },
+        {
+          "name": "Publish result (success)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"student_id\": 5,\n  \"exam_id\": 2,\n  \"score\": 88\n}" },
+            "url": "{{base_url}}/results"
+          }
+        },
+        {
+          "name": "Publish result (error - score out of range)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"student_id\": 5,\n  \"exam_id\": 2,\n  \"score\": 150\n}" },
+            "url": "{{base_url}}/results"
+          }
+        },
+        {
+          "name": "Publish result (error - forbidden, student token)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{student_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"student_id\": 5,\n  \"exam_id\": 2,\n  \"score\": 100\n}" },
+            "url": "{{base_url}}/results"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List my notifications (success)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{student_token}}" }],
+            "url": "{{base_url}}/notifications"
+          }
+        },
+        {
+          "name": "Send notification (success)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user_id\": 4,\n  \"message\": \"Your exam venue has changed to Hall D.\",\n  \"type\": \"exam_schedule\"\n}" },
+            "url": "{{base_url}}/notifications"
+          }
+        },
+        {
+          "name": "Send notification (error - invalid user_id)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "body": { "mode": "raw", "raw": "{\n  \"user_id\": 9999,\n  \"message\": \"Test\"\n}" },
+            "url": "{{base_url}}/notifications"
+          }
+        }
+      ]
+    },
+    {
+      "name": "System",
+      "item": [
+        { "name": "Health check (success)", "request": { "method": "GET", "url": "{{base_url}}/health" } }
+      ]
+    }
+  ]
+}
