@@ -134,40 +134,4 @@ codes, RESTful URI conventions, validation and error handling — see
 ## 7. API Testing & Documentation
 
 `docs/Postman_collection.json` contains a success and an error request for every
-endpoint (401/403/404/409/422 cases included). Export/re-import screenshots of
-Postman runs into your project report as required by the rubric (A5).
-
-## 8. Debugging & Performance Notes (fill in with your own evidence for the report)
-
-Suggested things to test and document, as required by the brief:
-- Confirm foreign-key constraint errors return `409` (try deleting a course that has
-  examinations attached, or inserting a result for a non-existent exam_id).
-- Confirm pagination/sorting on `/courses`, `/examinations`, `/results` with large
-  `limit` values (capped at 100 in `queryHelper.js`) and invalid `page`/`limit`
-  values (defaults kick in safely).
-- Confirm rate limiting triggers a `429` after 20 rapid `/auth/login` attempts.
-- Indexes were added on frequently-queried foreign key columns
-  (`courses.lecturer_id`, `examinations.course_id`, `results.student_id`,
-  `results.exam_id`) to keep list/filter queries fast as data grows.
-
-## 9. Individual Frontend (per student)
-
-Per the project brief, **each student must build their own separate frontend**.
-`frontend/` here is a shared reference implementation showing how to call every
-endpoint (auth, CRUD, pagination, the QR-code third-party feature). Fork/restyle it,
-or rebuild in React/Vue/etc., so each member's submission is separately identifiable —
-this is graded individually under rubric B1 and is not part of the shared Section A
-backend.
-
-## 10. What this project does NOT include (you must complete these yourself)
-
-These are individual/human deliverables the rubric requires that no code template can
-provide:
-- Your **200–300 word individual reflection** (rubric B3) — must be your own account
-  of your responsibilities, challenges, and lessons learned, backed by your own
-  commit/issue history.
-- Your **individual demonstration video** (rubric A6/B section) uploaded to YouTube.
-- Your **Understanding Quiz** answers (rubric B2, Topics 5–7).
-- Postman **screenshots** of your own test runs (evidence, not just the collection file).
-- The final **project report PDF** — use `docs/API_DOCUMENTATION.md` and `docs/ERD.md`
-  as source material, but write it in your own words per section 9 of the brief.
+endpoint (401/403/404/409/422 cases included).
