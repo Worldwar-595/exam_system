@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ExamFlow | Exam Management Portal</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- LOGIN -->
+  <section id="loginScreen" class="login-screen">
+    <div class="login-panel">
+      <div class="login-brand">
+        <div class="logo-mark">EF</div>
+        <div>
+          <div class="brand-name">ExamFlow</div>
+          <div class="brand-subtitle">Exam Scheduling & Result Management</div>
+        </div>
+      </div>
+
+      <div class="login-copy">
+        <p class="eyebrow">SECURE ACADEMIC PORTAL</p>
+        <h1>Stay ahead of every exam.</h1>
+        <p>Sign in to manage your academic schedule, results, courses and digital exam slips in one place.</p>
+      </div>
+
+      <form id="loginForm" class="form-stack">
+        <label>
+          Email
+          <input id="loginEmail" type="email" placeholder="admin@uptm.edu.my" required />
+        </label>
+        <label>
+          Password
+          <div class="password-wrap">
+            <input id="loginPassword" type="password" placeholder="Enter your password" required />
+            <button id="passwordToggle" class="password-toggle" type="button" aria-label="Show password">◉</button>
+          </div>
+        </label>
+        <button class="btn btn-primary btn-wide" type="submit">Sign in</button>
+      </form>
+
+      <div id="loginError" class="form-alert hidden"></div>
+
+      <div class="login-note">
+        <span class="status-dot"></span>
+        <span>Local API connection</span>
+        <strong>http://localhost:3000/api</strong>
+      </div>
+    </div>
+
+    <div class="login-art">
+      <div class="art-grid"></div>
+      <div class="art-content">
+        <p class="eyebrow light">SECURE RESTFUL WEB API</p>
+        <h2>One place for your academic exam journey.</h2>
+        <div class="feature-list">
+          <div><span>01</span> JWT-secured access</div>
+          <div><span>02</span> Live exam timetable</div>
+          <div><span>03</span> Published results & grades</div>
+          <div><span>04</span> QR exam slip generation</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <section id="appShell" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="logo-mark small">EF</div>
+        <div>
+          <div class="brand-name">ExamFlow</div>
+          <div class="brand-subtitle">Academic Portal</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebarNav">
+        <button class="nav-item active" data-view="dashboard"><span>⌂</span> Overview</button>
+        <button class="nav-item" data-view="examinations"><span>▦</span> Exam Schedule</button>
+        <button class="nav-item" data-view="results"><span>◈</span> Results</button>
+        <button class="nav-item" data-view="courses"><span>□</span> Courses</button>
+        <button class="nav-item" data-view="notifications"><span>◌</span> Notifications</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="api-status"><span class="status-dot" id="apiDot"></span><span id="apiStatusText">Checking API…</span></div>
+        <button id="logoutBtn" class="logout-btn">↪ Sign out</button>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow" id="pageEyebrow">DASHBOARD</p>
+          <h2 id="pageTitle">Overview</h2>
+        </div>
+        <div class="profile-chip">
+          <div class="avatar" id="avatar">A</div>
+          <div>
+            <strong id="userName">User</strong>
+            <span id="userRole">Role</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- DASHBOARD -->
+      <section id="view-dashboard" class="view active">
+        <div class="hero-card">
+          <div>
+            <p class="eyebrow light">WELCOME BACK</p>
+            <h1 id="welcomeText">Welcome back.</h1>
+            <p id="welcomeSubtext">Your academic exam information is ready.</p>
+          </div>
+          <div class="hero-badge">JWT SECURED</div>
+        </div>
+
+        <div id="statGrid" class="stat-grid"></div>
+
+        <div class="dashboard-grid">
+          <div class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">UPCOMING</p>
+                <h3>Next examinations</h3>
+              </div>
+              <button class="link-btn" data-go="examinations">View all →</button>
+            </div>
+            <div id="upcomingList" class="mini-list"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">QUICK ACTIONS</p>
+                <h3>What do you need?</h3>
+              </div>
+            </div>
+            <div id="quickActions" class="quick-actions"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- EXAMINATIONS -->
+      <section id="view-examinations" class="view">
+        <div class="section-toolbar">
+          <div>
+            <p class="section-description">Browse scheduled examinations and generate an exam-slip QR code.</p>
+          </div>
+          <div class="toolbar-group">
+            <input id="examSearch" class="search-input" type="search" placeholder="Search course or venue…" />
+            <button id="addExamBtn" class="btn btn-primary staff-only hidden">+ Schedule exam</button>
+          </div>
+        </div>
+        <div id="examTableWrap" class="panel table-panel"></div>
+      </section>
+
+      <!-- RESULTS -->
+      <section id="view-results" class="view">
+        <div class="section-toolbar">
+          <p class="section-description">View published examination results and grades.</p>
+          <button id="addResultBtn" class="btn btn-primary staff-only hidden">+ Publish result</button>
+        </div>
+        <div id="resultTableWrap" class="panel table-panel"></div>
+      </section>
+
+      <!-- COURSES -->
+      <section id="view-courses" class="view">
+        <div class="section-toolbar">
+          <div>
+            <p class="section-description">Browse available courses and assigned lecturers.</p>
+          </div>
+          <div class="toolbar-group">
+            <input id="courseSearch" class="search-input" type="search" placeholder="Search course…" />
+            <button id="addCourseBtn" class="btn btn-primary admin-only hidden">+ Add course</button>
+          </div>
+        </div>
+        <div id="courseGrid" class="course-grid"></div>
+      </section>
+
+      <!-- NOTIFICATIONS -->
+      <section id="view-notifications" class="view">
+        <div class="section-toolbar">
+          <p class="section-description">System messages and published-result notifications.</p>
+        </div>
+        <div id="notificationList" class="notification-list"></div>
+      </section>
+    </main>
+  </section>
+
+  <!-- MODAL -->
+  <div id="modalBackdrop" class="modal-backdrop hidden">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow" id="modalEyebrow">FORM</p>
+          <h3 id="modalTitle">Modal</h3>
+        </div>
+        <button id="closeModalBtn" class="icon-btn" aria-label="Close">×</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
